@@ -25,12 +25,19 @@ import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslator;
 import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslatorOptions;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import io.github.njackwinterofcode.translatex.R;
 
 public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
     private Button translate;
+    private Spinner spinner2;
+    private List<String> languagesName;
     private TextInputLayout textToTranslate;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -46,27 +53,29 @@ public class HomeFragment extends Fragment {
                 translateX(textToTranslate.getEditText().getText().toString());
             }
         });
-      /*  final TextView textView = root.findViewById(R.id.text_home);
-        homeViewModel.getText().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });*/
+
         // spinner object
         Spinner spinner1 = (Spinner) root.findViewById(R.id.spinner1);
-        Spinner spinner2 = (Spinner) root.findViewById(R.id.spinner2);
-//       //Create an ArrayAdapter using the string array and a default spinner layout
+        spinner2 = (Spinner) root.findViewById(R.id.spinner2);
+
+        Set<Integer> languages = FirebaseTranslateLanguage.getAllLanguages();
+        languagesName = new ArrayList<>();
+        for(int x: languages)
+            languagesName.add(FirebaseTranslateLanguage.languageCodeForLanguage(x));
+
+
+        //Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter1 = ArrayAdapter.createFromResource(getContext (),
                 R.array.input_language, android.R.layout.simple_spinner_item);
-        ArrayAdapter<CharSequence> adapter2 = ArrayAdapter.createFromResource(getContext (),
-                R.array.output_language, android.R.layout.simple_spinner_item);
-//      //Specify the layout to use when the list of choices appears
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, languagesName);
+
+        //Specify the layout to use when the list of choices appears
         adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        adapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-//       //Apply the adapter to the spinner
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        //Apply the adapter to the spinner
         spinner1.setAdapter(adapter1);
-        spinner2.setAdapter(adapter2);
+        spinner2.setAdapter(dataAdapter);
         return root;
     }
 
@@ -80,7 +89,7 @@ public class HomeFragment extends Fragment {
         FirebaseTranslatorOptions options =
                 new FirebaseTranslatorOptions.Builder()
                         .setSourceLanguage(FirebaseTranslateLanguage.EN)
-                        .setTargetLanguage(FirebaseTranslateLanguage.DE)
+                        .setTargetLanguage(FirebaseTranslateLanguage.languageForLanguageCode(spinner2.getSelectedItem().toString()))
                         .build();
         final FirebaseTranslator englishGermanTranslator =
                 FirebaseNaturalLanguage.getInstance().getTranslator(options);
